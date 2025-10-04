@@ -6,6 +6,10 @@ import type { Request, Response } from "express";
 import { Server } from "socket.io";
 import { v4 } from "uuid";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const port = parseInt(process.env.PORT || "3001", 10);
 const dev = process.env.NODE_ENV !== "production";
@@ -26,7 +30,6 @@ app.get("/health", async (_: Request, res: Response) => {
 
 if (!dev) {
   const distPath = path.join(__dirname, "../../dist");
-
   app.use(express.static(distPath));
   app.get("*", (_: Request, res: Response) => {
     res.sendFile(path.join(distPath, "index.html"));
@@ -42,7 +45,6 @@ const addMove = (roomId: string, socketId: string, move: Move) => {
   if (!room.usersMoves.has(socketId)) {
     room.usersMoves.set(socketId, []);
   }
-
   room.usersMoves.get(socketId)!.push(move);
 };
 
@@ -61,9 +63,7 @@ io.on("connection", (socket) => {
 
   const getRoomId = (): string => {
     const joinedRoom = [...socket.rooms].find((room) => room !== socket.id);
-
     if (!joinedRoom) return socket.id;
-
     return joinedRoom;
   };
 
@@ -72,14 +72,12 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     const userMoves = room.usersMoves.get(socketId);
-
     if (userMoves) room.drawed.push(...userMoves);
     room.users.delete(socketId);
     room.usersMoves.delete(socketId);
 
     socket.leave(roomId.toUpperCase());
 
-    // Clean up empty rooms
     if (room.users.size === 0) {
       rooms.delete(roomId.toUpperCase());
     }
@@ -88,7 +86,6 @@ io.on("connection", (socket) => {
   socket.on("create_room", (username: string) => {
     console.log(`🏗️ Creating room for user ${socket.id} with username: ${username}`);
 
-    // Input validation
     if (!username || typeof username !== "string" || username.trim().length === 0) {
       console.log("❌ Invalid username");
       socket.emit("error", "Invalid username");
@@ -131,7 +128,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("check_room", (roomId: string) => {
-    // Input validation
     if (!roomId || typeof roomId !== "string" || roomId.trim().length === 0) {
       socket.emit("room_exists", false);
       return;
@@ -149,7 +145,6 @@ io.on("connection", (socket) => {
   socket.on("join_room", (roomId: string, username: string) => {
     console.log(`🚪 User ${socket.id} trying to join room ${roomId} with username: ${username}`);
 
-    // Input validation
     if (!roomId || typeof roomId !== "string" || roomId.trim().length === 0) {
       console.log("❌ Invalid room ID");
       socket.emit("joined", "", true);
@@ -172,7 +167,6 @@ io.on("connection", (socket) => {
     console.log(`🔍 Room ${roomId.toUpperCase()} exists:`, !!room);
 
     if (room && room.users.size < 12) {
-      // Check for duplicate username in the room
       const existingUsers = Array.from(room.users.values());
       const isDuplicateName = existingUsers.some(
         (existingUsername) => existingUsername.toLowerCase() === username.trim().toLowerCase()
