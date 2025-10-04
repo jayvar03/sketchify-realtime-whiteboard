@@ -152,15 +152,12 @@ const Home = () => {
                   if (nameError) setNameError("");
                 }}
                 onKeyDown={(e) => {
-                  // Allow easy clearing with Ctrl+A or Escape
-                  if (e.key === 'Escape' || (e.ctrlKey && e.key === 'a')) {
+                  // Only clear on Escape key
+                  if (e.key === 'Escape') {
                     e.preventDefault();
                     clearSavedUsername();
                   }
-                }}
-                onFocus={(e) => {
-                  // Select all text when focused for easy replacement
-                  e.target.select();
+                  // Don't interfere with normal typing including backspace
                 }}
                 autoFocus
               />
