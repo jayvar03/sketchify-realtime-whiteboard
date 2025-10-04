@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { FiChevronRight } from "react-icons/fi";
 import { HiOutlineDownload } from "react-icons/hi";
 import { ImExit } from "react-icons/im";
 import { IoIosShareAlt } from "react-icons/io";
@@ -10,7 +9,6 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 
 import { CANVAS_SIZE } from "@/common/constants/canvasSize";
 import { DEFAULT_EASE } from "@/common/constants/easings";
-import { useViewportSize } from "@/common/hooks/useViewportSize";
 import { useModal } from "@/common/recoil/modal";
 import { socket } from "@/common/lib/socket";
 
@@ -28,16 +26,8 @@ import ShapeSelector from "./ShapeSelector";
 const ToolBar = () => {
   const { canvasRef, bgRef } = useRefs();
   const { openModal } = useModal();
-  const { width } = useViewportSize();
-
-  const [opened, setOpened] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (width >= 1024) setOpened(true);
-    else setOpened(false);
-  }, [width]);
 
   const handleExit = () => navigate("/");
 
@@ -79,26 +69,16 @@ const ToolBar = () => {
     openModal(<ClearCanvasModal onConfirm={clearCanvas} />);
   };
   return (
-    <>
-      <motion.button
-        className="btn-icon absolute bottom-1/2 -left-2 z-50 h-10 w-10 rounded-full bg-black text-2xl transition-none lg:hidden"
-        animate={{ rotate: opened ? 0 : 180 }}
-        transition={{ duration: 0.2, ease: DEFAULT_EASE }}
-        onClick={() => setOpened(!opened)}
-      >
-        <FiChevronRight />
-      </motion.button>
-      <motion.div
-        className="absolute left-10 top-[50%] z-50 flex flex-col gap-1 rounded-lg bg-gray-800 p-2 text-white shadow-xl"
-        animate={{
-          x: opened ? 0 : -70,
-          y: "-50%",
-        }}
-        transition={{
-          duration: 0.2,
-          ease: DEFAULT_EASE,
-        }}
-      >
+    <motion.div
+      className="absolute left-4 top-[50%] z-50 flex flex-col gap-1 rounded-lg bg-gray-800 p-2 text-white shadow-xl"
+      animate={{
+        y: "-50%",
+      }}
+      transition={{
+        duration: 0.2,
+        ease: DEFAULT_EASE,
+      }}
+    >
         <HistoryBtns />
         <button 
           className="btn-icon text-xl hover:bg-red-600" 
@@ -131,8 +111,7 @@ const ToolBar = () => {
         <button className="btn-icon text-xl" onClick={handleExit}>
           <ImExit />
         </button>
-      </motion.div>
-    </>
+    </motion.div>
   );
 };
 
