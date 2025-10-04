@@ -14,7 +14,21 @@ const Home = () => {
   const clearRoom = useClearRoom();
 
   const [roomId, setRoomId] = useState("");
-  const [username, setUsername] = useState(""); // Always start empty on home screen
+  const [username, setUsername] = useState("");
+  
+  // Load saved username for convenience but let user change it
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("sketchify-username");
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+  }, []);
+
+  // Add function to clear localStorage when user wants fresh start
+  const clearSavedUsername = () => {
+    localStorage.removeItem("sketchify-username");
+    setUsername("");
+  };
   const [nameError, setNameError] = useState("");
 
   const navigate = useNavigate();
@@ -124,20 +138,43 @@ const Home = () => {
             <label className="mb-2 block text-sm font-semibold text-gray-700">
               Your Name *
             </label>
-            <input
-              className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none ${
-                nameError 
-                  ? "border-red-500 focus:border-red-500" 
-                  : "border-gray-300 focus:border-black"
-              }`}
-              placeholder="Enter your name..."
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value.slice(0, 15));
-                if (nameError) setNameError("");
-              }}
-              autoFocus
-            />
+            <div className="relative">
+              <input
+                className={`w-full rounded-lg border-2 px-4 py-2.5 pr-10 transition-colors focus:outline-none ${
+                  nameError 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-gray-300 focus:border-black"
+                }`}
+                placeholder="Enter your name..."
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value.slice(0, 15));
+                  if (nameError) setNameError("");
+                }}
+                onKeyDown={(e) => {
+                  // Allow easy clearing with Ctrl+A or Escape
+                  if (e.key === 'Escape' || (e.ctrlKey && e.key === 'a')) {
+                    e.preventDefault();
+                    clearSavedUsername();
+                  }
+                }}
+                onFocus={(e) => {
+                  // Select all text when focused for easy replacement
+                  e.target.select();
+                }}
+                autoFocus
+              />
+              {username && (
+                <button
+                  type="button"
+                  onClick={clearSavedUsername}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors text-lg font-bold"
+                  title="Clear name and remove from saved names"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             {nameError && (
               <p className="mt-1.5 text-sm text-red-500 font-medium">{nameError}</p>
             )}
